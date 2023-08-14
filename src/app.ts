@@ -1,6 +1,7 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import CONFIG from "./config";
 import cors from "cors";
+const serverLog = require("./utils/log");
 
 const logs = require("./middleware/log");
 const productsRoute = require("./routes/product");
@@ -20,5 +21,5 @@ app.get("/", (req: Request, res: Response, next: NextFunction) => {
 const PORT = CONFIG.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`Server is listening on port ${PORT}`);
+  serverLog({ message: `Server is listening on port ${PORT}` });
 });
