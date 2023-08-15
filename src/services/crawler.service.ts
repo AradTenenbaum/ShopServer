@@ -7,6 +7,7 @@ import { Product } from "../interfaces/product.interface";
 import { Request, Response } from "express";
 import { ERROR } from "../utils/constants";
 import { saveDataToFile } from "../utils/file";
+import { isDouble } from "../utils/string";
 
 export async function fetchAmazonData(req: Request, res: Response) {
   const searchQuery = <string>req.query.q;
@@ -36,6 +37,7 @@ export async function fetchFromAmazonToProducts(searchQuery: string) {
 
   const products: Product[] = [];
 
+  // TODO: check if price is a valid number
   $(".s-result-item.s-widget-spacing-small").each(
     (index: number, element: any) => {
       const title = $(element).find(".a-color-base.a-text-normal").text();
@@ -45,9 +47,11 @@ export async function fetchFromAmazonToProducts(searchQuery: string) {
       const image = $(element).find(".s-image").attr("src");
       const rate = $(element).find(".a-icon-alt").text();
 
+      const fixedPrice = `${priceInt}${priceFraction}`;
+
       products.push({
         title,
-        price: `${priceInt}${priceFraction}`,
+        price: isDouble(fixedPrice) ? fixedPrice : "",
         image,
         link: "https://www.amazon.com" + link,
         rate,

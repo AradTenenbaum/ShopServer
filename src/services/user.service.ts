@@ -56,7 +56,22 @@ export const addFavoriteCategory = (req: Request, res: Response) => {
       );
     return res
       .status(200)
-      .send({ message: "Category was added to user's favorites" });
+      .send({ message: "Category was added to your favorites" });
+  } catch (error) {
+    serverLog(error, ERROR);
+    return res.status(500).send({ error: "Something went wrong" });
+  }
+};
+
+export const getFavorites = (req: Request, res: Response) => {
+  const username = req.username;
+  try {
+    if (username) {
+      const favorites = [
+        ...(Users.get(username)?.favoriteCategories as Set<string>),
+      ];
+      return res.status(200).send({ favorites });
+    }
   } catch (error) {
     serverLog(error, ERROR);
     return res.status(500).send({ error: "Something went wrong" });

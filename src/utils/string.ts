@@ -14,3 +14,8 @@ export function getParentPathByLevels(filePath: string, levels: number) {
 
   return parentPath;
 }
+
+export function isDouble(str: string): boolean {
+  const parsedNumber = parseFloat(str);
+  return !isNaN(parsedNumber);
+}

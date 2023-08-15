@@ -2,7 +2,7 @@ const path = require("path");
 import fs from "fs";
 const serverLog = require("../utils/log");
 import { ProductsInterface } from "../interfaces/products.interface";
-import { getParentPathByLevels } from "./fixStr";
+import { getParentPathByLevels } from "./string";
 
 export function saveDataToFile(filename: string, data: ProductsInterface) {
   const jsonData = JSON.stringify(data, null, 2);

@@ -35,9 +35,15 @@ export const validateUsername = (
 ) => {
   const username = req.body.username;
 
-  if (!username || username.length < 4 || Users.has(username)) {
+  if (!username || username.length < 4) {
     return res.status(400).send({
       error: "Username is not valid. Must be at list 4 characters",
+    });
+  }
+
+  if (Users.has(username)) {
+    return res.status(400).send({
+      error: "Username already taken",
     });
   }
 
