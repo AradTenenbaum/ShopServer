@@ -6,4 +6,4 @@ const router = require("express").Router();
 router.get("/load", fetchAmazonData);
 router.get("/all", getAllProducts);
 
-module.exports = router;
+export default router;

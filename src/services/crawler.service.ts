@@ -1,15 +1,12 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
 const { Products } = require("../model/products");
-const path = require("path");
 const serverLog = require("../utils/log");
 import CONFIG from "../config";
 import { Product } from "../interfaces/product.interface";
 import { Request, Response } from "express";
-import fs from "fs";
-import { ProductsInterface } from "../interfaces/products.interface";
-import { getParentPathByLevels } from "../utils/fixStr";
 import { ERROR } from "../utils/constants";
+import { saveDataToFile } from "../utils/file";
 
 export async function fetchAmazonData(req: Request, res: Response) {
   const searchQuery = <string>req.query.q;
@@ -46,43 +43,20 @@ export async function fetchFromAmazonToProducts(searchQuery: string) {
       const priceFraction = $(element).find(".a-price-fraction").text();
       const link = $(element).find("h2 a").attr("href");
       const image = $(element).find(".s-image").attr("src");
+      const rate = $(element).find(".a-icon-alt").text();
 
       products.push({
         title,
         price: `${priceInt}${priceFraction}`,
         image,
         link: "https://www.amazon.com" + link,
+        rate,
       });
     }
   );
 
   Products[fixedSearchQuery] = products;
-  saveObjectToFile("data/products.json", Products);
+  saveDataToFile("data/products.json", Products);
 
   return products;
-}
-
-export function saveObjectToFile(filename: string, data: ProductsInterface) {
-  const jsonData = JSON.stringify(data, null, 2);
-  const dirPath = getParentPathByLevels(__dirname, 1) + "\\data";
-  const fullPath = path.resolve(getParentPathByLevels(__dirname, 1), filename);
-
-  if (!fs.existsSync(fullPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
-  }
-
-  fs.writeFileSync(fullPath, jsonData, "utf-8");
-
-  serverLog({ message: `Data saved to ${filename}` });
-}
-
-export function fetchObjectFromFile(filename: string): ProductsInterface {
-  const fullPath = path.resolve(getParentPathByLevels(__dirname, 1), filename);
-
-  if (!fs.existsSync(fullPath)) {
-    return {};
-  }
-
-  const jsonData = fs.readFileSync(fullPath, "utf-8");
-  return JSON.parse(jsonData);
 }

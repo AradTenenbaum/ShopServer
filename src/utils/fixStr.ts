@@ -1,5 +1,6 @@
 const path = require("path");
 
+// Fix path to get levels up
 export function getParentPathByLevels(filePath: string, levels: number) {
   const normalizedFilePath = path.normalize(filePath);
   const parts = normalizedFilePath.split(path.sep);
