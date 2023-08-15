@@ -17,30 +17,38 @@ export const register = (req: Request, res: Response) => {
       favoriteCategories: new Set<string>([]),
     });
     id++;
+    return res.status(200).send({ message: "Successfully registered" });
   } catch (error) {
     serverLog(error, ERROR);
     return res.status(500).send({ error: "Something went wrong" });
   }
-  return res.status(200).send({ message: "Successfully registered" });
 };
 
 export const login = (req: Request, res: Response) => {
   const { username, password } = req.body;
-  if (!username || !password)
-    return res
-      .status(400)
-      .send({ error: "Invalid details, please enter username and password" });
-  if (Users.has(username)) {
-    if (Users.get(username)?.password === password) {
-      const token = jwt.sign({ username }, config.JWT_KEY as Secret, {
-        expiresIn: "1h",
-      });
-      return res.status(200).send({ message: "Successfully logged in", token });
-    } else {
-      return res.status(400).send({ error: "Wrong credentials" });
+  try {
+    if (!username || !password)
+      return res
+        .status(400)
+        .send({ error: "Invalid details, please enter username and password" });
+    if (Users.has(username)) {
+      if (Users.get(username)?.password === password) {
+        // Create a json web token
+        const token = jwt.sign({ username }, config.JWT_KEY as Secret, {
+          expiresIn: "1h",
+        });
+        return res
+          .status(200)
+          .send({ message: "Successfully logged in", token });
+      } else {
+        return res.status(400).send({ error: "Wrong credentials" });
+      }
     }
+    return res.status(400).send({ error: "Wrong credentials" });
+  } catch (error) {
+    serverLog(error, ERROR);
+    return res.status(500).send({ error: "Something went wrong" });
   }
-  return res.status(400).send({ error: "Wrong credentials" });
 };
 
 export const addFavoriteCategory = (req: Request, res: Response) => {

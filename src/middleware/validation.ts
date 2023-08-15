@@ -11,6 +11,7 @@ const isStrongPassword = (password: string) => {
   );
 };
 
+// Validation middleware
 export const validateStrongPassword = (
   req: Request,
   res: Response,
@@ -28,6 +29,7 @@ export const validateStrongPassword = (
   next();
 };
 
+// Validation middleware
 export const validateUsername = (
   req: Request,
   res: Response,

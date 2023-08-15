@@ -16,8 +16,6 @@ export function saveDataToFile(filename: string, data: ProductsInterface) {
 
   // Write to file
   fs.writeFileSync(fullPath, jsonData, "utf-8");
-
-  serverLog({ message: `Data saved to ${filename}` });
 }
 
 export function fetchDataFromFile(filename: string): ProductsInterface {

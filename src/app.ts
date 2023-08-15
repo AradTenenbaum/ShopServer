@@ -10,6 +10,7 @@ import usersRoute from "./routes/user.routes";
 import { fetchDataFromFile } from "./utils/file";
 import { ProductsInterface } from "./interfaces/products.interface";
 import { fetchFromAmazonToProducts } from "./services/crawler.service";
+import { ERROR } from "./utils/constants";
 
 const app: Application = express();
 app.use(express.json());
@@ -27,13 +28,19 @@ app.get("/", (req: Request, res: Response, next: NextFunction) => {
   return res.send({ message: "Server is running..." });
 });
 
-cron.schedule("* */60 * * * *", () => {
-  const tempProducts: ProductsInterface =
-    fetchDataFromFile("data/products.json");
-  Object.keys(tempProducts).forEach((search) => {
-    fetchFromAmazonToProducts(search);
-  });
-  serverLog({ message: `Products are updated` });
+// Schedule for updating the data in the products.json file
+cron.schedule(CONFIG.LOAD_DATA_SCHEDULE, () => {
+  try {
+    const tempProducts: ProductsInterface =
+      fetchDataFromFile("data/products.json");
+    // For the products that clients search
+    Object.keys(tempProducts).forEach((search) => {
+      fetchFromAmazonToProducts(search);
+    });
+    serverLog({ message: `Products are updated` });
+  } catch (error) {
+    serverLog(error, ERROR);
+  }
 });
 
 export default app;

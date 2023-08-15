@@ -1,33 +1,17 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
 const { Products } = require("../model/products");
-const serverLog = require("../utils/log");
 import CONFIG from "../config";
-import { Product } from "../interfaces/product.interface";
-import { Request, Response } from "express";
-import { ERROR } from "../utils/constants";
+import { ProductInterface } from "../interfaces/product.interface";
 import { saveDataToFile } from "../utils/file";
 import { isDouble } from "../utils/string";
 
-export async function fetchAmazonData(req: Request, res: Response) {
-  const searchQuery = <string>req.query.q;
-
-  if (!searchQuery) return res.status(400).send("Insert search query");
-  // TODO: handle language change, or pages
-  try {
-    // TODO: catch axios error normally
-    await fetchFromAmazonToProducts(searchQuery);
-
-    return res.status(200).send("Success");
-  } catch (error) {
-    serverLog(error, ERROR);
-    return res.status(400).send("Error in loading data");
-  }
-}
-
 export async function fetchFromAmazonToProducts(searchQuery: string) {
+  // Create the url
   const fixedSearchQuery = searchQuery.toLocaleLowerCase();
   const url = `${CONFIG.AMAZON_URL}${encodeURIComponent(fixedSearchQuery)}`;
+
+  // Get the data from amazon
   const response = await axios.get(url, {
     headers: {
       "User-Agent": "Your User Agent String",
@@ -35,9 +19,9 @@ export async function fetchFromAmazonToProducts(searchQuery: string) {
   });
   const $ = cheerio.load(response.data);
 
-  const products: Product[] = [];
+  const products: ProductInterface[] = [];
 
-  // TODO: check if price is a valid number
+  // Get the needed elements from the response
   $(".s-result-item.s-widget-spacing-small").each(
     (index: number, element: any) => {
       const title = $(element).find(".a-color-base.a-text-normal").text();
@@ -47,11 +31,14 @@ export async function fetchFromAmazonToProducts(searchQuery: string) {
       const image = $(element).find(".s-image").attr("src");
       const rate = $(element).find(".a-icon-alt").text();
 
-      const fixedPrice = `${priceInt}${priceFraction}`;
+      // Fix the price because I can't predict when there are multiple prices
+      let fixedPrice = `${priceInt}${priceFraction}`;
+      const dots = fixedPrice.split(".");
+      if (dots.length > 2 || !isDouble(fixedPrice)) fixedPrice = "";
 
       products.push({
         title,
-        price: isDouble(fixedPrice) ? fixedPrice : "",
+        price: fixedPrice,
         image,
         link: "https://www.amazon.com" + link,
         rate,
@@ -59,6 +46,7 @@ export async function fetchFromAmazonToProducts(searchQuery: string) {
     }
   );
 
+  // Update the object and save it to the file
   Products[fixedSearchQuery] = products;
   saveDataToFile("data/products.json", Products);
 

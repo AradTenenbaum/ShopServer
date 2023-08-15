@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 const { REQUEST } = require("../utils/constants");
 const serverLog = require("../utils/log");
 
+// Log middleware, sends logs at the end of every request
 const logs = (req: Request, res: Response, next: NextFunction) => {
   res.on("finish", function () {
     serverLog(
